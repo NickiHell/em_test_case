@@ -62,8 +62,8 @@ quote-style = "double"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "src.config.settings"
-python_files = ["tests/**/test_*.py"]
-testpaths = ["tests"]
+python_files = ["test_*.py"]
+testpaths = ["tests/unit", "tests/integration"]
 addopts = [
     "--strict-markers",
     "--strict-config",

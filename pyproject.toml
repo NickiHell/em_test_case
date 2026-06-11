@@ -1,0 +1,102 @@
+[project]
+name = "em-test-case"
+version = "0.1.0"
+description = "Custom authentication and authorization system"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "bcrypt>=5.0.0",
+    "django>=6.0.6",
+    "djangorestframework>=3.17.1",
+    "drf-spectacular>=0.29.0",
+    "psycopg>=3.3.4",
+    "loguru>=0.7.3",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.1.0",
+    "pytest>=9.0.3",
+    "pytest-django>=4.12.0",
+    "pytest-randomly>=4.1.0",
+    "pytest-cov>=6.1.1",
+    "ruff>=0.15.16",
+    "pre-commit>=4.2.0",
+    "psycopg-binary>=3.3.4",
+    "bandit>=1.9.4",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",
+    "I",
+    "N",
+    "D",
+    "UP",
+    "ANN",
+    "SIM",
+    "PL",
+    "ARG",
+    "BLE",
+    "RUF100",
+]
+ignore = [
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
+    "D203",
+    "D212",
+    "ANN401",
+    "PLR0913",
+    "PLR2004",
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "ANN", "N", "ARG"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "src.config.settings"
+python_files = ["tests/**/test_*.py"]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-fail-under=100",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "src/config/asgi.py",
+    "src/config/wsgi.py",
+    "manage.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", ".history"]
+skips = ["B101", "B311"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+ignore_missing_imports = true

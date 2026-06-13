@@ -20,6 +20,10 @@ class User(TimestampMixin):
     def __str__(self) -> str:
         return f"{self.fio} ({self.email})"
 
+    @property
+    def is_authenticated(self) -> bool:
+        return True
+
 
 class AuthToken(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

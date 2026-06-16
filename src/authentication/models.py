@@ -7,7 +7,9 @@ from src.core.models import TimestampMixin
 
 class User(TimestampMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    fio = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    patronymic = models.CharField(max_length=255, blank=True, default="")
     email = models.EmailField(unique=True)
     password_hash = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
@@ -18,7 +20,7 @@ class User(TimestampMixin):
         verbose_name_plural = "users"
 
     def __str__(self) -> str:
-        return f"{self.fio} ({self.email})"
+        return f"{self.last_name} {self.first_name} ({self.email})"
 
     @property
     def is_authenticated(self) -> bool:
@@ -32,7 +34,7 @@ class AuthToken(models.Model):
         on_delete=models.CASCADE,
         related_name="tokens",
     )
-    token_hash = models.CharField(max_length=64, unique=True)
+    token_hash = models.CharField(max_length=128, unique=True)
     expires_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 

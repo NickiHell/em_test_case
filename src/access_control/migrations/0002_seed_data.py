@@ -4,7 +4,7 @@ from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 
-def seed_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:  # noqa: ARG001
+def seed_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Role = apps.get_model("access_control", "Role")
     BusinessElement = apps.get_model("access_control", "BusinessElement")
     AccessRule = apps.get_model("access_control", "AccessRule")
@@ -124,19 +124,22 @@ def seed_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:  # n
     )
 
     admin_user = User.objects.create(
-        fio="Admin User",
+        last_name="Admin",
+        first_name="User",
         email="admin@example.com",
         password_hash=bcrypt.hashpw(b"admin123", bcrypt.gensalt()).decode(),
         is_active=True,
     )
     manager_user = User.objects.create(
-        fio="Manager User",
+        last_name="Manager",
+        first_name="User",
         email="manager@example.com",
         password_hash=bcrypt.hashpw(b"manager123", bcrypt.gensalt()).decode(),
         is_active=True,
     )
     regular_user = User.objects.create(
-        fio="Regular User",
+        last_name="Regular",
+        first_name="User",
         email="user@example.com",
         password_hash=bcrypt.hashpw(b"user123", bcrypt.gensalt()).decode(),
         is_active=True,
@@ -147,7 +150,7 @@ def seed_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:  # n
     UserRole.objects.create(user=regular_user, role=user_role)
 
 
-def reverse_seed_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:  # noqa: ARG001
+def reverse_seed_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Role = apps.get_model("access_control", "Role")
     BusinessElement = apps.get_model("access_control", "BusinessElement")
     User = apps.get_model("authentication", "User")
@@ -164,7 +167,6 @@ def reverse_seed_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> No
 class Migration(migrations.Migration):
     dependencies = [
         ("access_control", "0001_initial"),
-        ("authentication", "0001_initial"),
     ]
 
     operations = [

@@ -9,12 +9,13 @@ from src.core.exceptions import AuthenticationFailedError
 
 def test_middleware_sets_user_and_auth_on_success() -> None:
     user = User.objects.create(
-        fio="Middleware",
+        last_name="Middleware",
+        first_name="",
         email="middleware@example.com",
         password_hash=b"$2b$12$xxxx",
     )
     raw_token = "test-middleware-token"
-    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    token_hash = hashlib.sha512(raw_token.encode()).hexdigest()
     token = AuthToken.objects.create(
         user=user,
         token_hash=token_hash,

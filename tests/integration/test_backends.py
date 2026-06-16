@@ -25,12 +25,13 @@ def test_token_not_found(raw_token: str) -> None:
 
 def test_expired_token() -> None:
     user = User.objects.create(
-        fio="Expired",
+        last_name="Expired",
+        first_name="",
         email="expired@example.com",
         password_hash=b"$2b$12$xxxx",
     )
     raw_token = "test-expired-token"
-    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    token_hash = hashlib.sha512(raw_token.encode()).hexdigest()
     AuthToken.objects.create(
         user=user,
         token_hash=token_hash,
@@ -43,13 +44,14 @@ def test_expired_token() -> None:
 
 def test_inactive_user() -> None:
     user = User.objects.create(
-        fio="Inactive",
+        last_name="Inactive",
+        first_name="",
         email="inactive@example.com",
         password_hash=b"$2b$12$xxxx",
         is_active=False,
     )
     raw_token = "test-inactive-token"
-    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    token_hash = hashlib.sha512(raw_token.encode()).hexdigest()
     AuthToken.objects.create(
         user=user,
         token_hash=token_hash,
@@ -62,12 +64,13 @@ def test_inactive_user() -> None:
 
 def test_successful_authentication() -> None:
     user = User.objects.create(
-        fio="Active",
+        last_name="Active",
+        first_name="",
         email="active@example.com",
         password_hash=b"$2b$12$xxxx",
     )
     raw_token = "test-valid-token"
-    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    token_hash = hashlib.sha512(raw_token.encode()).hexdigest()
     token = AuthToken.objects.create(
         user=user,
         token_hash=token_hash,
@@ -84,12 +87,13 @@ def test_token_expiry_check_uses_utc(mock_timezone: Mock) -> None:
     mock_now = datetime(2025, 1, 1, 12, 0, 0, tzinfo=UTC)
     mock_timezone.now.return_value = mock_now
     user = User.objects.create(
-        fio="TZ",
+        last_name="TZ",
+        first_name="",
         email="tz@example.com",
         password_hash=b"$2b$12$xxxx",
     )
     raw_token = "test-tz-token"
-    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    token_hash = hashlib.sha512(raw_token.encode()).hexdigest()
     AuthToken.objects.create(
         user=user,
         token_hash=token_hash,

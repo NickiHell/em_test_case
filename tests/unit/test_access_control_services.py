@@ -1,6 +1,6 @@
 import pytest
 
-from src.access_control.services import get_action_field
+from src.access_control.services import PermissionService
 from src.core.domain import Action
 
 
@@ -14,4 +14,4 @@ from src.core.domain import Action
     ],
 )
 def test_get_action_field(action: Action, expected: str) -> None:
-    assert get_action_field(action) == expected
+    assert PermissionService.get_action_field(action) == expected

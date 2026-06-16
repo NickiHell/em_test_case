@@ -23,15 +23,17 @@ def test_element_count() -> None:
 
 
 @pytest.mark.parametrize(
-    "email,fio",
+    "email,last_name,first_name",
     [
-        ("admin@example.com", "Admin User"),
-        ("manager@example.com", "Manager User"),
-        ("user@example.com", "Regular User"),
+        ("admin@example.com", "Admin", "User"),
+        ("manager@example.com", "Manager", "User"),
+        ("user@example.com", "Regular", "User"),
     ],
 )
-def test_user_exists(email: str, fio: str) -> None:
-    assert User.objects.get(email=email).fio == fio
+def test_user_exists(email: str, last_name: str, first_name: str) -> None:
+    user = User.objects.get(email=email)
+    assert user.last_name == last_name
+    assert user.first_name == first_name
 
 
 def test_user_count() -> None:

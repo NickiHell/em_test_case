@@ -17,7 +17,8 @@ def element() -> BusinessElement:
 @pytest.fixture
 def test_user() -> User:
     return User.objects.create(
-        fio="Role User",
+        last_name="Role",
+        first_name="User",
         email="roleuser@example.com",
         password_hash=b"$2b$12$abcdefghijklmnopqrstuv",
     )

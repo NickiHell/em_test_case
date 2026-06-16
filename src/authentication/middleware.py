@@ -3,6 +3,7 @@ from collections.abc import Callable
 from django.http import HttpRequest, HttpResponse
 
 from src.authentication.backends import TokenAuthentication
+from src.core.exceptions import AuthenticationFailedError
 
 
 class TokenAuthenticationMiddleware:
@@ -17,6 +18,6 @@ class TokenAuthenticationMiddleware:
                 user, token = result
                 request.user = user  # type: ignore[assignment]
                 request.auth = token  # type: ignore[attr-defined]
-        except Exception:  # noqa: BLE001
+        except AuthenticationFailedError:
             pass
         return self.get_response(request)

@@ -6,8 +6,8 @@ from src.core.exceptions import (
     ConflictError,
     NotFoundError,
     PermissionDeniedError,
-    custom_exception_handler,
 )
+from src.core.infrastructure import custom_exception_handler
 
 
 def test_authentication_failed_error() -> None:

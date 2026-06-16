@@ -1,6 +1,7 @@
 import hashlib
 
 from django.utils import timezone
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.request import Request
 
@@ -20,7 +21,7 @@ class TokenAuthentication(BaseAuthentication):
             raise AuthenticationFailedError("Invalid token header")
 
         raw_token = parts[1]
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        token_hash = hashlib.sha512(raw_token.encode()).hexdigest()
 
         try:
             token = AuthToken.objects.select_related("user").get(token_hash=token_hash)
@@ -34,3 +35,16 @@ class TokenAuthentication(BaseAuthentication):
             raise AuthenticationFailedError("User inactive")
 
         return (token.user, token)
+
+
+class TokenAuthenticationScheme(OpenApiAuthenticationExtension):
+    target_class = TokenAuthentication
+    name = "BearerAuth"
+    priority = 1
+
+    def get_security_definition(self, _auto_schema: object) -> dict[str, object]:
+        return {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "UUID",
+        }

@@ -1,7 +1,7 @@
 import pytest
 
 from src.access_control.models import AccessRule, BusinessElement, Role, UserRole
-from src.access_control.services import check_permission
+from src.access_control.services import PermissionService
 from src.authentication.models import User
 from src.core.domain import Action
 
@@ -9,7 +9,8 @@ from src.core.domain import Action
 @pytest.fixture
 def admin_user() -> User:
     return User.objects.create(
-        fio="Admin",
+        last_name="Admin",
+        first_name="",
         email="admin@test.com",
         password_hash=b"$2b$12$xxxx",
         is_active=True,
@@ -19,7 +20,8 @@ def admin_user() -> User:
 @pytest.fixture
 def regular_user() -> User:
     return User.objects.create(
-        fio="User",
+        last_name="User",
+        first_name="",
         email="user@test.com",
         password_hash=b"$2b$12$xxxx",
         is_active=True,
@@ -29,7 +31,8 @@ def regular_user() -> User:
 @pytest.fixture
 def inactive_user() -> User:
     return User.objects.create(
-        fio="Inactive",
+        last_name="Inactive",
+        first_name="",
         email="inactive@test.com",
         password_hash=b"$2b$12$xxxx",
         is_active=False,
@@ -62,7 +65,7 @@ def test_check_permission_granted(
         element=products_element,
         can_read=True,
     )
-    assert check_permission(admin_user, "test_products", Action.READ) is True
+    assert PermissionService.check(admin_user, "test_products", Action.READ) is True
 
 
 def test_check_permission_denied(
@@ -77,7 +80,7 @@ def test_check_permission_denied(
         can_read=True,
         can_delete=False,
     )
-    assert check_permission(regular_user, "test_products", Action.DELETE) is False
+    assert PermissionService.check(regular_user, "test_products", Action.DELETE) is False
 
 
 def test_check_permission_inactive_user(
@@ -91,13 +94,13 @@ def test_check_permission_inactive_user(
         element=products_element,
         can_read=True,
     )
-    assert check_permission(inactive_user, "test_products", Action.READ) is False
+    assert PermissionService.check(inactive_user, "test_products", Action.READ) is False
 
 
 def test_check_permission_no_roles(
     regular_user: User,
 ) -> None:
-    assert check_permission(regular_user, "test_products", Action.READ) is False
+    assert PermissionService.check(regular_user, "test_products", Action.READ) is False
 
 
 def test_check_permission_no_rule(
@@ -105,7 +108,7 @@ def test_check_permission_no_rule(
     user_role: Role,
 ) -> None:
     UserRole.objects.create(user=regular_user, role=user_role)
-    assert check_permission(regular_user, "test_products", Action.READ) is False
+    assert PermissionService.check(regular_user, "test_products", Action.READ) is False
 
 
 def test_check_permission_any_role_grants(
@@ -126,7 +129,22 @@ def test_check_permission_any_role_grants(
         element=products_element,
         can_read=True,
     )
-    assert check_permission(admin_user, "test_products", Action.READ) is True
+    assert PermissionService.check(admin_user, "test_products", Action.READ) is True
+
+
+def test_check_permission_all_field_grants(
+    admin_user: User,
+    admin_role: Role,
+    products_element: BusinessElement,
+) -> None:
+    UserRole.objects.create(user=admin_user, role=admin_role)
+    AccessRule.objects.create(
+        role=admin_role,
+        element=products_element,
+        can_read=False,
+        can_read_all=True,
+    )
+    assert PermissionService.check(admin_user, "test_products", Action.READ) is True
 
 
 @pytest.mark.parametrize(
@@ -148,4 +166,4 @@ def test_check_permission_action_mapping(
     UserRole.objects.create(user=admin_user, role=admin_role)
     kwargs = {field: True}
     AccessRule.objects.create(role=admin_role, element=products_element, **kwargs)
-    assert check_permission(admin_user, "test_products", action) is True
+    assert PermissionService.check(admin_user, "test_products", action) is True

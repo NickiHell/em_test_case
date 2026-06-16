@@ -19,3 +19,12 @@ class Action(StrEnum):
     CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
+
+
+HTTP_METHOD_TO_ACTION: dict[str, Action] = {
+    "GET": Action.READ,
+    "POST": Action.CREATE,
+    "PUT": Action.UPDATE,
+    "PATCH": Action.UPDATE,
+    "DELETE": Action.DELETE,
+}

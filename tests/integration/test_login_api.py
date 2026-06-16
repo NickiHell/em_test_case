@@ -9,7 +9,8 @@ from src.authentication.models import AuthToken, User
 def test_login_success(api_client: APIClient) -> None:
     password_hash = bcrypt.hashpw(b"secret123", bcrypt.gensalt()).decode()
     User.objects.create(
-        fio="Test",
+        last_name="Test",
+        first_name="",
         email="test@example.com",
         password_hash=password_hash,
         is_active=True,
@@ -32,7 +33,8 @@ def test_login_success(api_client: APIClient) -> None:
 def test_login_wrong_password(api_client: APIClient) -> None:
     password_hash = bcrypt.hashpw(b"secret123", bcrypt.gensalt()).decode()
     User.objects.create(
-        fio="Test",
+        last_name="Test",
+        first_name="",
         email="test@example.com",
         password_hash=password_hash,
         is_active=True,
@@ -65,7 +67,8 @@ def test_login_nonexistent_email(api_client: APIClient) -> None:
 def test_login_inactive_user(api_client: APIClient) -> None:
     password_hash = bcrypt.hashpw(b"secret123", bcrypt.gensalt()).decode()
     User.objects.create(
-        fio="Inactive",
+        last_name="Inactive",
+        first_name="",
         email="inactive@example.com",
         password_hash=password_hash,
         is_active=False,
@@ -102,7 +105,8 @@ def test_login_invalid_email_format(api_client: APIClient) -> None:
 def test_login_creates_token(api_client: APIClient) -> None:
     password_hash = bcrypt.hashpw(b"secret123", bcrypt.gensalt()).decode()
     user = User.objects.create(
-        fio="Test",
+        last_name="Test",
+        first_name="",
         email="test@example.com",
         password_hash=password_hash,
         is_active=True,
@@ -124,7 +128,8 @@ def test_login_creates_token(api_client: APIClient) -> None:
 def test_login_multiple_tokens(api_client: APIClient) -> None:
     password_hash = bcrypt.hashpw(b"secret123", bcrypt.gensalt()).decode()
     User.objects.create(
-        fio="Test",
+        last_name="Test",
+        first_name="",
         email="test@example.com",
         password_hash=password_hash,
         is_active=True,

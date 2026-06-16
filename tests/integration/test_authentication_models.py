@@ -8,7 +8,8 @@ from src.authentication.models import AuthToken, User
 @pytest.fixture
 def user() -> User:
     return User.objects.create(
-        fio="Test User",
+        last_name="Test",
+        first_name="User",
         email="test@example.com",
         password_hash=b"$2b$12$abcdefghijklmnopqrstuv",
         is_active=True,
@@ -19,13 +20,14 @@ def user() -> User:
 def token(user: User) -> AuthToken:
     return AuthToken.objects.create(
         user=user,
-        token_hash="a" * 64,
+        token_hash="a" * 128,
         expires_at=datetime.now(UTC) + timedelta(days=1),
     )
 
 
 def test_user_creation(user: User) -> None:
-    assert user.fio == "Test User"
+    assert user.last_name == "Test"
+    assert user.first_name == "User"
     assert user.email == "test@example.com"
     assert user.is_active is True
     assert user.password_hash is not None
@@ -37,7 +39,8 @@ def test_user_str(user: User) -> None:
 
 def test_user_default_is_active() -> None:
     u = User.objects.create(
-        fio="Another",
+        last_name="Another",
+        first_name="",
         email="another@example.com",
         password_hash=b"$2b$12$xxxx",
     )
@@ -56,22 +59,29 @@ def test_user_soft_delete(user: User) -> None:
 
 
 @pytest.mark.parametrize(
-    "fio,email",
+    "last_name,first_name,email",
     [
-        ("Alice", "alice@example.com"),
-        ("Bob", "bob@example.com"),
+        ("Alice", "", "alice@example.com"),
+        ("Bob", "", "bob@example.com"),
     ],
 )
-def test_user_parametrized(fio: str, email: str) -> None:
-    u = User.objects.create(fio=fio, email=email, password_hash=b"$2b$12$xxxx")
-    assert u.fio == fio
+def test_user_parametrized(last_name: str, first_name: str, email: str) -> None:
+    u = User.objects.create(
+        last_name=last_name,
+        first_name=first_name,
+        email=email,
+        password_hash=b"$2b$12$xxxx",
+    )
+    assert u.last_name == last_name
+    assert u.first_name == first_name
     assert u.email == email
 
 
 def test_user_unique_email(user: User) -> None:
     with pytest.raises(Exception):
         User.objects.create(
-            fio="Dup",
+            last_name="Dup",
+            first_name="",
             email="test@example.com",
             password_hash=b"$2b$12$yyyy",
         )
@@ -79,7 +89,7 @@ def test_user_unique_email(user: User) -> None:
 
 def test_token_creation(token: AuthToken, user: User) -> None:
     assert token.user == user
-    assert len(token.token_hash) == 64
+    assert len(token.token_hash) == 128
     assert token.expires_at is not None
 
 
@@ -90,9 +100,9 @@ def test_token_str(token: AuthToken) -> None:
 
 def test_token_unique_hash(user: User) -> None:
     expires = datetime.now(UTC) + timedelta(days=1)
-    AuthToken.objects.create(user=user, token_hash="a" * 64, expires_at=expires)
+    AuthToken.objects.create(user=user, token_hash="a" * 128, expires_at=expires)
     with pytest.raises(Exception):
-        AuthToken.objects.create(user=user, token_hash="a" * 64, expires_at=expires)
+        AuthToken.objects.create(user=user, token_hash="a" * 128, expires_at=expires)
 
 
 def test_token_cascade_delete(user: User, token: AuthToken) -> None:
@@ -104,7 +114,7 @@ def test_token_auto_now_add(token: AuthToken) -> None:
     assert token.created_at is not None
 
 
-@pytest.mark.parametrize("length", [32, 64])
+@pytest.mark.parametrize("length", [32, 64, 128])
 def test_token_hash_length(user: User, length: int) -> None:
     expires = datetime.now(UTC) + timedelta(days=1)
     t = AuthToken.objects.create(

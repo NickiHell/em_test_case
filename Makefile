@@ -13,7 +13,7 @@ test:
 	docker compose exec api python -m pytest --cov=src --cov-report=term-missing --cov-report=html --cov-fail-under=100
 
 test-local:
-	DB_HOST=localhost uv run pytest
+	uv run pytest
 
 lint:
 	uv run ruff check src/ tests/

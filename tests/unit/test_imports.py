@@ -9,6 +9,7 @@ from django.conf import settings
         "src.authentication",
         "src.access_control",
         "src.business",
+        "src.users",
         "rest_framework",
         "drf_spectacular",
     ],
@@ -27,10 +28,19 @@ def test_auth_backend_configured() -> None:
 
 
 def test_database_configured() -> None:
-    assert settings.DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql"
+    assert settings.DATABASES["default"]["ENGINE"] in (
+        "django.db.backends.postgresql",
+        "django.db.backends.sqlite3",
+    )
 
 
-@pytest.mark.parametrize("key,rate", [("anon", "5/minute"), ("login", "5/minute")])
+@pytest.mark.parametrize(
+    "key,rate",
+    [
+        ("anon", "30/minute"),
+        ("login", "50/minute"),
+    ],
+)
 def test_throttle_rates(key: str, rate: str) -> None:
     assert settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"][key] == rate
 

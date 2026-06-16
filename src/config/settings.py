@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "src.authentication",
     "src.access_control",
     "src.business",
+    "src.users",
 ]
 
 MIDDLEWARE = [
@@ -85,24 +86,46 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
     "DEFAULT_AUTHENTICATION_CLASSES": ["src.authentication.backends.TokenAuthentication"],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PERMISSION_CLASSES": ["src.core.infrastructure.IsAuthenticatedOrUnauthenticated"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "5/minute",
-        "login": "5/minute",
+        "anon": "30/minute",
+        "login": "50/minute",
     },
-    "EXCEPTION_HANDLER": "src.core.exceptions.custom_exception_handler",
+    "EXCEPTION_HANDLER": "src.core.infrastructure.custom_exception_handler",
     "UNAUTHENTICATED_USER": None,
 }
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Auth & Access Control API",
-    "DESCRIPTION": "Custom authentication and authorization system",
     "VERSION": "0.1.0",
-    "SERVE_INCLUDE_SCHEMA": False,
+    "SERVE_INCLUDE_SCHEMA": True,
+    "SERVE_URLCONF": "src.config.urls",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": False,
+        "filter": True,
+    },
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SECURITY": [{"BearerAuth": []}],
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "UUID",
+                "description": (
+                    "Token-based authentication. "
+                    "Obtain a token from `POST /api/auth/login/` "
+                    "and include it in the Authorization header."
+                ),
+            }
+        }
+    },
 }
 
 AUTH_TOKEN_EXPIRY_HOURS = int(os.getenv("AUTH_TOKEN_EXPIRY_HOURS", "24"))

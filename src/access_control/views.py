@@ -4,23 +4,31 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from src.access_control.models import AccessRule, BusinessElement, Role, UserRole
+from src.access_control.models import AccessRule, BusinessElement, Role
+from src.access_control.schemas import (
+    access_rule_detail_schema,
+    access_rule_list_create_schema,
+    business_element_list_create_schema,
+    role_list_create_schema,
+)
 from src.access_control.serializers import (
     AccessRuleSerializer,
     BusinessElementSerializer,
     RoleSerializer,
 )
+from src.access_control.services import PermissionService
 from src.core.exceptions import NotFoundError
 
 
 class IsAdmin(BasePermission):
     def has_permission(self, request: Request, _view: object) -> bool:
         user = request.user
-        if user is None:
+        if user is None or not user.is_authenticated:
             return False
-        return UserRole.objects.filter(user=user, role__name="admin").exists()
+        return PermissionService.is_admin(user)
 
 
+@role_list_create_schema
 class RoleListCreateView(APIView):
     permission_classes = [IsAdmin]
 
@@ -36,6 +44,7 @@ class RoleListCreateView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+@business_element_list_create_schema
 class BusinessElementListCreateView(APIView):
     permission_classes = [IsAdmin]
 
@@ -51,6 +60,7 @@ class BusinessElementListCreateView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+@access_rule_list_create_schema
 class AccessRuleListCreateView(APIView):
     permission_classes = [IsAdmin]
 
@@ -73,6 +83,7 @@ class AccessRuleListCreateView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+@access_rule_detail_schema
 class AccessRuleDetailView(APIView):
     permission_classes = [IsAdmin]
 

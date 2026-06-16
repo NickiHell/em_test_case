@@ -1,54 +1,41 @@
-import hashlib
-import uuid
-from datetime import timedelta
-
-import bcrypt
-from django.conf import settings
-from django.utils import timezone
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
+from rest_framework.views import APIView
 
-from src.authentication.models import AuthToken, User
+from src.authentication.schemas import login_view_schema, logout_view_schema
 from src.authentication.serializers import LoginSerializer
-from src.core.exceptions import AuthenticationFailedError
+from src.authentication.services import AuthService, TokenService
 
 
-@api_view(["POST"])
-@permission_classes([AllowAny])
-@throttle_classes([AnonRateThrottle])
-def login_view(request: Request) -> Response:
-    serializer = LoginSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+@login_view_schema
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle]
 
-    email = serializer.validated_data["email"]
-    password = serializer.validated_data["password"]
+    def post(self, request: Request) -> Response:
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-    try:
-        user = User.objects.get(email=email, is_active=True)
-    except User.DoesNotExist:
-        raise AuthenticationFailedError("Invalid credentials") from None
+        user = AuthService.authenticate(
+            serializer.validated_data["email"],
+            serializer.validated_data["password"],
+        )
 
-    if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
-        raise AuthenticationFailedError("Invalid credentials")
+        raw_token, expires_at = TokenService.create(user)
 
-    raw_token = str(uuid.uuid4())
-    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-    expires_at = timezone.now() + timedelta(
-        hours=settings.AUTH_TOKEN_EXPIRY_HOURS,
-    )
+        return Response(
+            {
+                "token": raw_token,
+                "expires_at": expires_at,
+            }
+        )
 
-    AuthToken.objects.create(
-        user=user,
-        token_hash=token_hash,
-        expires_at=expires_at,
-    )
 
-    return Response(
-        {
-            "token": raw_token,
-            "expires_at": expires_at.isoformat(),
-        }
-    )
+@logout_view_schema
+class LogoutView(APIView):
+    def post(self, request: Request) -> Response:
+        token = request.auth
+        token.delete()
+        return Response({"detail": "Logged out successfully"})
